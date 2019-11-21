@@ -72,24 +72,26 @@ plotFoldEnrichment <- function(de_res, pval, N){
   ## Clean up melted data frame
   df.ss <- df.melt %>%
     dplyr::filter(.data$variable %in% c("fold_enrichment_list1", "fold_enrichment_list2",
-                         "enrich_p_list1", "enrich_p_list2",
-                         "diff_enrich_adjusted"))
+                                        "enrich_p_list1", "enrich_p_list2",
+                                        "diff_enrich_adjusted"))
 
   ## get vector of pvals
   pvals <- subset(df.ss, df.ss$variable %in% c("enrich_p_list1", "enrich_p_list2"))
 
   ## Generate data set to be used for plotting
-  bardat <- subset(df.ss, df.ss$variable %in% c("fold_enrichment_list1", "fold_enrichment_list2")) %>%
+  bardat.tmp <- subset(df.ss, df.ss$variable %in% c("fold_enrichment_list1", "fold_enrichment_list2")) %>%
     dplyr::mutate(alpha = log10(pvals$value),
-           pvals = pvals$value) %>%
+                  pvals = pvals$value) %>%
     dplyr::arrange(.data$pvals)
+
+  bardat <- merge(bardat.tmp, df[, c(1,8)], by = "KEGG_PATHWAY_ID")
 
   ###########################################################
   # Generate plot
   ###########################################################
-    # library(ggnewscale)
+  # library(ggnewscale)
   # First, we'll make a plot and save it as a variable
-    g <- ggplot(bardat, aes(x=stats::reorder(.data$KEGG_PATHWAY_description, -.data$pvals), y=.data$value)) +
+  g <- ggplot(bardat, aes(x=stats::reorder(.data$KEGG_PATHWAY_description, -.data$diff_enrich_adjusted), y=.data$value)) +
     geom_bar(stat="identity", aes(col=.data$variable, group=.data$variable, fill=.data$pvals), position="dodge") +
     ylim(0, max(bardat$value) + 0.6) + xlab("") +
     coord_flip() +
@@ -129,7 +131,7 @@ plotFoldEnrichment <- function(de_res, pval, N){
   p <- ggplot(mapping = aes(xmin = .data$xmin, xmax = .data$xmax, ymin = .data$ymin, ymax = .data$ymax)) +
     geom_rect(data = ld[ld$vars == "fold_enrichment_list1", ], aes(fill = .data$pvals), color = 'black') +
     ylim(0, max(bardat$value) + 1.0) + xlab("") + ylab("Fold Enrichment") +
-    scale_fill_gradient(low = "darkred", high = "transparent",
+    scale_fill_gradient(low = "darkred", high = "white",
                         #trans = 'log10',
                         limits = c(min(ld$pvals), 0),
                         breaks = as.numeric(summary(ld$pvals))[c(1,2,3,5,6)],
@@ -137,7 +139,7 @@ plotFoldEnrichment <- function(de_res, pval, N){
                         name = paste0("P-values List 1", "\n", "gene count: ", de_res$de_table[1,6])) +
     ggnewscale::new_scale_fill() +
     geom_rect(data = ld[ld$vars == "fold_enrichment_list2", ], aes(fill = .data$pvals), color = 'black') +
-    scale_fill_gradient(low =  "navy", high = "transparent",
+    scale_fill_gradient(low =  "navy", high = "white",
                         #trans = 'log10',
                         limits = c(min(ld$pvals), 0),
                         breaks = as.numeric(summary(ld$pvals))[c(1,2,3,5,6)],

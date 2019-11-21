@@ -215,7 +215,7 @@ for analysis from each gene list (recall that this number may not be the same as
 genes in the user's original list) are reported below their respective p-values
 in the legend.")
 
-## ----plotFoldEnrichment, message=FALSE, warning=FALSE, fig.height=6, fig.width=8, fig.cap=cap_plot----
+## ----plotFoldEnrichment, message=FALSE, fig.height=6, fig.width=8, fig.cap=cap_plot----
 ## Plot fold enrichment
 plotFoldEnrichment(de_res = diff_enrich, pval = 0.05, N = 5)
 
